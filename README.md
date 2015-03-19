@@ -2,6 +2,11 @@
 [![MELPA Stable](http://stable.melpa.org/packages/rainbow-delimiters-badge.svg)](http://stable.melpa.org/#/rainbow-delimiters)
 [![Build status](https://travis-ci.org/Fanael/rainbow-delimiters.svg?branch=master)](https://travis-ci.org/Fanael/rainbow-delimiters)
 
+# STOP RIGHT THERE
+
+This is a modified version of the original `rainbow-delimiters` mode. The point of
+it is to not only highlight the delimiters, but also the text contained within them.
+
 # rainbow-delimiters
 
 `rainbow-delimiters` is a "rainbow parentheses"-like mode which highlights
