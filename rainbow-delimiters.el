@@ -1,4 +1,10 @@
-;;; rainbow-delimiters.el --- Highlight brackets according to their depth -*- lexical-binding: t -*-
+;;; rainbow-delimiters.el --- Highlight text according to its depth -*- lexical-binding: t -*-
+
+;; This is actually an evil hack to make rainbow-delimiters
+;; highlight everything within the delimiters instead of
+;; just the delimiters themselves. My modifications are
+;; under the same license as the original package.
+;; -- E.C.D. 2015-03-18
 
 ;; Copyright (C)
 ;;   2010-2013 Jeremy Rayman
