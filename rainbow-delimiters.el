@@ -180,43 +180,15 @@ The returned value is either `rainbow-delimiters-unmatched-face',
                            rainbow-delimiters-outermost-only-face-count)))))
              "-face")))))
 
-(defun rainbow-delimiters--apply-color (loc depth match)
-  "Highlight a single delimiter at LOC according to DEPTH.
+(defun rainbow-delimiters--apply-color (beg end depth match)
+  "Highlight text between BEG and END according to DEPTH.
 
-LOC is the location of the character to add text properties to.
+BEG:END is the location of the text to add text properties to.
 DEPTH is the nested depth at LOC, which determines the face to use.
 MATCH is nil iff it's a mismatched closing delimiter."
-  (let ((face (funcall rainbow-delimiters-pick-face-function depth match loc)))
+  (let ((face (funcall rainbow-delimiters-pick-face-function depth match beg)))
     (when face
-      (font-lock-prepend-text-property loc (1+ loc) 'face face))))
-
-(defun rainbow-delimiters--char-ineligible-p (loc ppss delim-syntax-code)
-  "Return t if char at LOC should not be highlighted.
-PPSS is the `parse-partial-sexp' state at LOC.
-DELIM-SYNTAX-CODE is the `car' of a raw syntax descriptor at LOC.
-
-Returns t if char at loc meets one of the following conditions:
-- Inside a string.
-- Inside a comment.
-- Is an escaped char, e.g. ?\)"
-  (or
-   (nth 3 ppss)                ; inside string?
-   (nth 4 ppss)                ; inside comment?
-   (nth 5 ppss)                ; escaped according to the syntax table?
-   ;; Note: no need to consider single-char openers, they're already handled
-   ;; by looking at ppss.
-   (cond
-    ;; Two character opener, LOC at the first character?
-    ((/= 0 (logand #x10000 delim-syntax-code))
-     (/= 0 (logand #x20000 (or (car (syntax-after (1+ loc))) 0))))
-    ;; Two character opener, LOC at the second character?
-    ((/= 0 (logand #x20000 delim-syntax-code))
-     (/= 0 (logand #x10000 (or (car (syntax-after (1- loc))) 0))))
-    (t
-     nil))))
-
-(defconst rainbow-delimiters--delim-regex "\\s(\\|\\s)"
-  "Regex matching all opening and closing delimiters the mode highlights.")
+      (font-lock-prepend-text-property beg end 'face face))))
 
 ;; Main function called by font-lock.
 (defun rainbow-delimiters--propertize (end)
@@ -225,25 +197,39 @@ Returns t if char at loc meets one of the following conditions:
 Used by font-lock for dynamic highlighting."
   (let* ((inhibit-point-motion-hooks t)
          (last-ppss-pos (point))
-         (ppss (syntax-ppss)))
-    (while (re-search-forward rainbow-delimiters--delim-regex end t)
-      (let* ((delim-pos (match-beginning 0))
-             (delim-syntax (syntax-after delim-pos)))
-        (setq ppss (save-excursion
-                     (parse-partial-sexp last-ppss-pos delim-pos nil nil ppss)))
-        (setq last-ppss-pos delim-pos)
-        (let ((delim-syntax-code (car delim-syntax)))
-          (cond
-           ((rainbow-delimiters--char-ineligible-p delim-pos ppss delim-syntax-code)
-            nil)
-           ((= 4 (logand #xFFFF delim-syntax-code))
-            ;; The (1+ ...) is needed because `parse-partial-sexp' returns the
-            ;; depth at the opening delimiter, not in the block being started.
-            (rainbow-delimiters--apply-color delim-pos (1+ (nth 0 ppss)) t))
-           (t
-            ;; Not an opening delimiter, so it's a closing delimiter.
-            (let ((matches-p (eq (cdr delim-syntax) (char-after (nth 1 ppss)))))
-              (rainbow-delimiters--apply-color delim-pos (nth 0 ppss) matches-p))))))))
+         (ppss (syntax-ppss))
+         (pos1 last-ppss-pos) ;; start of range
+         (pos2 last-ppss-pos) ;; end of range
+         ppss-pos ;; sample depth at this position
+         sc)
+    (while (< pos2 end)
+      (save-excursion
+        (goto-char pos2)
+        (skip-syntax-forward "^w_. '\"()<" end)
+        (setq pos1 (point))
+        (setq sc (syntax-class (syntax-after pos1)))
+        (cond
+         ((eq sc 4) ;; open parens
+          (setq pos2 (1+ pos1))
+          (setq ppss-pos pos2))
+         ((eq sc 5) ;; close parens
+          (setq pos2 (1+ pos1))
+          (setq ppss-pos pos1))
+         ((eq sc 11) ;; comment-start
+          (forward-comment (buffer-size))
+          (setq pos1 (point))
+          (setq pos2 pos1))
+         (t
+          (skip-syntax-forward  "w_. \"'" end)
+          (setq pos2 (point))
+          (setq ppss-pos pos1))))
+      (if (< pos1 pos2)
+          (progn
+            (setq ppss (save-excursion
+                         (parse-partial-sexp last-ppss-pos ppss-pos nil nil ppss)))
+            (setq last-ppss-pos ppss-pos)
+            (rainbow-delimiters--apply-color
+             pos1 pos2 (nth 0 ppss) t)))))
   ;; We already fontified the delimiters, tell font-lock there's nothing more
   ;; to do.
   nil)
