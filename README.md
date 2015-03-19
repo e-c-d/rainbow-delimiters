@@ -1,6 +1,4 @@
-[![MELPA](http://melpa.org/packages/rainbow-delimiters-badge.svg)](http://melpa.org/#/rainbow-delimiters)
-[![MELPA Stable](http://stable.melpa.org/packages/rainbow-delimiters-badge.svg)](http://stable.melpa.org/#/rainbow-delimiters)
-[![Build status](https://travis-ci.org/Fanael/rainbow-delimiters.svg?branch=master)](https://travis-ci.org/Fanael/rainbow-delimiters)
+[![Build status](https://travis-ci.org/e-c-d/rainbow-delimiters.svg?branch=master)](https://travis-ci.org/e-c-d/rainbow-delimiters)
 
 # STOP RIGHT THERE
 
