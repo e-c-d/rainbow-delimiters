@@ -235,7 +235,7 @@ Used by font-lock for dynamic highlighting."
                          (parse-partial-sexp last-ppss-pos ppss-pos nil nil ppss)))
             (setq last-ppss-pos ppss-pos)
             (rainbow-delimiters--apply-color
-             pos1 pos2 (nth 0 ppss) t)))))
+             pos1 pos2 (1+ (nth 0 ppss)) t)))))
   ;; We already fontified the delimiters, tell font-lock there's nothing more
   ;; to do.
   nil)
