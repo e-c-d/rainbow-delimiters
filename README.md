@@ -5,6 +5,8 @@
 This is a modified version of the original `rainbow-delimiters` mode. The point of
 it is to not only highlight the delimiters, but also the text contained within them.
 
+![Screenshot of emacs buffer with rainbow-delimiters](https://www.ecd.space/files/rainbow-delimiters.png)
+
 # rainbow-delimiters
 
 `rainbow-delimiters` is a "rainbow parentheses"-like mode which highlights
